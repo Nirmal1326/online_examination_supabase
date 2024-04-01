@@ -9,6 +9,9 @@ class Mcq extends StatefulWidget {
 }
 
 class _McqState extends State<Mcq> {
+  late String selectedSubject = 'Java'; // Default selected subject
+  final List<String> subjects = ['Java', 'Python', 'JavaScript', 'C++'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,20 +20,67 @@ class _McqState extends State<Mcq> {
         backgroundColor: Color(0xFF88AB8E),
         title: Text('MCQ'),
       ),
-      body: Test(),
+      body: Column(
+        children: [
+          DropdownButton<String>(
+            value: selectedSubject,
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                setState(() {
+                  selectedSubject = newValue;
+                });
+              }
+            },
+            items: subjects.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+          ),
+          Expanded(
+            child: Test(selectedSubject: selectedSubject),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class Test extends StatefulWidget {
-  const Test({Key? key}) : super(key: key);
+  final String selectedSubject;
+
+  const Test({Key? key, required this.selectedSubject}) : super(key: key);
 
   @override
   State<Test> createState() => _TestState();
 }
 
 class _TestState extends State<Test> {
-  final noteStream = supabase.from('question').stream(primaryKey: ['id']);
+  late Stream<List<Map<String, dynamic>>> noteStream;
+
+  @override
+  void initState() {
+    super.initState();
+    noteStream = _getNoteStream(widget.selectedSubject);
+  }
+
+  @override
+  void didUpdateWidget(covariant Test oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedSubject != oldWidget.selectedSubject) {
+      setState(() {
+        noteStream = _getNoteStream(widget.selectedSubject);
+      });
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> _getNoteStream(String selectedSubject) {
+    return supabase
+        .from(selectedSubject.toLowerCase())
+        .stream(primaryKey: ['id']);
+  }
+
   Map<String, String?> selectedAnswers = {};
 
   @override
@@ -99,8 +149,10 @@ class _TestState extends State<Test> {
     );
   }
 
-  void _submitAnswers(List<Map<String, dynamic>> notes) {
-    showScoreDialog(notes);
+  void _submitAnswers(List<Map<String, dynamic>> notes) async {
+    int score = calculateScore(notes);
+    await updateScore(score);
+    showScoreDialog(score, notes.length);
   }
 
   int calculateScore(List<Map<String, dynamic>> notes) {
@@ -118,14 +170,26 @@ class _TestState extends State<Test> {
     return score;
   }
 
-  void showScoreDialog(List<Map<String, dynamic>> notes) {
-    int score = calculateScore(notes);
+  Future<void> updateScore(int score) async {
+    try {
+      final response = await supabase
+          .from('answer')
+          .insert({'subject': widget.selectedSubject, 'score': score});
+      if (response.error != null) {
+        throw Exception(response.error!.message);
+      }
+    } catch (e) {
+      print('Error updating score: $e');
+    }
+  }
+
+  void showScoreDialog(int score, int totalQuestions) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Your Score"),
-          content: Text("You scored $score out of ${notes.length}"),
+          content: Text("You scored $score out of $totalQuestions"),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -139,66 +203,3 @@ class _TestState extends State<Test> {
     );
   }
 }
-
-// class _TestState extends State<Test> {
-//   final noteStream = supabase.from('question').stream(primaryKey: ['id']);
-//   @override
-//   Widget build(BuildContext context) {
-//     double screenWidth = MediaQuery.of(context).size.width;
-//     double screenHeight = MediaQuery.of(context).size.height;
-//     double questionTextSize =
-//         screenWidth * 0.05; // Adjust this factor according to your preference
-//
-//     return Padding(
-//       padding: const EdgeInsets.all(8.0),
-//       child: StreamBuilder(
-//         stream: noteStream,
-//         builder: (context, snapshot) {
-//           if (!snapshot.hasData) {
-//             return Center(child: CircularProgressIndicator());
-//           }
-//           final notes = snapshot.data!;
-//           print(notes.length);
-//           return ListView.builder(
-//             itemCount: notes.length,
-//             itemBuilder: (context, index) {
-//               final note = notes[index];
-//               List<Widget> optionsWidgets = [];
-//               for (int i = 1; i <= 4; i++) {
-//                 optionsWidgets.add(
-//                   RadioListTile(
-//                     title: Text(note['option_$i']),
-//                     value: i,
-//                     groupValue: note['answer'] != null
-//                         ? int.tryParse(note['answer'])
-//                         : null,
-//                     onChanged: (value) {
-//                       setState(() {
-//                         note['answer'] = value.toString();
-//                       });
-//                     },
-//                   ),
-//                 );
-//               }
-//               return Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     "Question ${index + 1}: ${note['question_title']}",
-//                     style: TextStyle(
-//                         fontWeight: FontWeight.bold,
-//                         fontSize: questionTextSize),
-//                   ),
-//                   SizedBox(height: 10),
-//                   Column(
-//                     children: optionsWidgets,
-//                   ),
-//                 ],
-//               );
-//             },
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
