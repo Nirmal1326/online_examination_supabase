@@ -7,9 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
-    url: 'https://judpokxmtitvqxqqvskj.supabase.co',
+    url: '',//use your api url
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1ZHBva3htdGl0dnF4cXF2c2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDc3MjQ3MTMsImV4cCI6MjAyMzMwMDcxM30.8MHukAymRPNSXGS8nqdHiyspskz1aIYmyqTzCW_ka_Q',
+        '',//use your api code
   );
   runApp(const BaseApp());
 }
