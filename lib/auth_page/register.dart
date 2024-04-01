@@ -274,7 +274,7 @@ class _SignupState extends State<Signup> {
                         const Text(
                           'If you already have an account ?',
                           style: TextStyle(
-                              fontSize: 17.0, color: Color(0xFF092635)),
+                              fontSize: 15.0, color: Color(0xFF092635)),
                         ),
                         TextButton(
                           onPressed: () {
@@ -286,7 +286,7 @@ class _SignupState extends State<Signup> {
                           child: const Text(
                             'Log-in',
                             style: TextStyle(
-                                fontSize: 17.0, color: Color(0xFF092635)),
+                                fontSize: 15.0, color: Color(0xFF092635)),
                           ),
                         ),
                       ],
