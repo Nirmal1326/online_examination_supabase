@@ -20,7 +20,6 @@ class _SignupState extends State<Signup> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   String? temp;
-
   signup() async {
     try {
       setState(() {

@@ -9,14 +9,12 @@ class SplashPage extends StatefulWidget {
   @override
   _SplashPageState createState() => _SplashPageState();
 }
-
 class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
     _redirect();
   }
-
   Future<void> _redirect() async {
     await Future.delayed(Duration.zero);
     if (!mounted) {
