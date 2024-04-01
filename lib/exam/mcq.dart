@@ -10,7 +10,7 @@ class Mcq extends StatefulWidget {
 
 class _McqState extends State<Mcq> {
   late String selectedSubject = 'Java'; // Default selected subject
-  final List<String> subjects = ['Java', 'Python', 'JavaScript', 'C++'];
+  final List<String> subjects = ['Java', 'Python', 'JavaScript', 'Cpp'];
 
   @override
   Widget build(BuildContext context) {
